@@ -1,20 +1,18 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
-interface SkeletonProps {
-  className?: string
-  style?: React.CSSProperties
-}
+interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function Skeleton({ className, style }: SkeletonProps) {
+function Skeleton({ className, ...props }: SkeletonProps) {
   return (
     <div
-      className={cn("skeleton rounded-md", className)}
-      style={style}
-      aria-hidden="true"
+      className={cn("animate-pulse rounded-md bg-muted", className)}
+      {...props}
     />
   )
 }
+
+export { Skeleton }
 
 export function SkeletonText({ lines = 1, className }: { lines?: number; className?: string }) {
   return (
@@ -47,7 +45,7 @@ export function SkeletonTableRow({ cols = 4 }: { cols?: number }) {
     <tr className="border-b border-border">
       {Array.from({ length: cols }).map((_, i) => (
         <td key={i} className="px-4 py-3">
-          <Skeleton className="h-4" style={{ width: `${60 + Math.random() * 40}%` }} />
+          <Skeleton className="h-4" style={{ width: `${60 + (i * 10) % 40}%` }} />
         </td>
       ))}
     </tr>
