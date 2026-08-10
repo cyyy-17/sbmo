@@ -24,7 +24,7 @@ export function TypeModal({ categoryId }: { categoryId: string }) {
     const formData = new FormData(e.currentTarget)
     const data = {
       name: formData.get("name") as string,
-      severityLevel: formData.get("severityLevel") as string,
+      severity: formData.get("severity") as string,
       categoryId,
     }
 
@@ -58,8 +58,8 @@ export function TypeModal({ categoryId }: { categoryId: string }) {
             <Input id="name" name="name" placeholder="e.g. Plagiarism" required minLength={2} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="severityLevel">Severity Level</Label>
-            <Select name="severityLevel" defaultValue="MINOR" required>
+            <Label htmlFor="severity">Severity Level</Label>
+            <Select name="severity" defaultValue="MINOR" required>
               <SelectTrigger>
                 <SelectValue placeholder="Select severity..." />
               </SelectTrigger>
