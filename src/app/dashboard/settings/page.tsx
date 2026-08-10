@@ -11,7 +11,7 @@ export default async function SettingsPage() {
   }
 
   // Fetch fresh user data from DB
-  let user = await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: {
       name: true,

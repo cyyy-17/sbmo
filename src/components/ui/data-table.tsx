@@ -64,7 +64,7 @@ export function DataTable<TData extends object>({
     setPagination(prev => ({ ...prev, pageSize: newSize, pageIndex: 0 }))
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const table = useTable({
     _features: dtFeatures,
     columns,
