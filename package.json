@@ -46,14 +46,5 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-  "packageManager": "pnpm@11.20.0",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "core-js",
-      "@prisma/engines",
-      "prisma",
-      "@prisma/client",
-      "bcryptjs"
-    ]
-  }
+  "packageManager": "pnpm@11.20.0"
 }
