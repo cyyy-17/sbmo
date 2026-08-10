@@ -64,8 +64,8 @@ export default async function ViolationsSettingsPage() {
                         <div key={type.id} className="flex items-center justify-between p-2 rounded-md border text-sm bg-card hover:bg-accent/50 transition-colors">
                           <span className="font-medium">{type.name}</span>
                           <div className="flex items-center gap-2">
-                            <Badge variant={type.severityLevel === 'CRITICAL' ? 'destructive' : type.severityLevel === 'MAJOR' ? 'secondary' : 'outline'} className="text-[10px]">
-                              {type.severityLevel}
+                            <Badge variant={type.severity === 'CRITICAL' ? 'destructive' : type.severity === 'MAJOR' ? 'secondary' : 'outline'} className="text-[10px]">
+                              {type.severity}
                             </Badge>
                             <button className="text-muted-foreground hover:text-destructive transition-colors">
                               <Trash2 className="h-3 w-3" />

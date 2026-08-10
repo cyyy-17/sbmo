@@ -13,7 +13,7 @@ const categorySchema = z.object({
 
 const typeSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  severityLevel: z.enum(["MINOR", "MAJOR", "CRITICAL"]),
+  severity: z.enum(["MINOR", "MAJOR", "CRITICAL"]),
   categoryId: z.string().min(1, "Category is required")
 })
 
@@ -62,7 +62,7 @@ export async function deleteViolationCategory(id: string) {
   revalidatePath("/dashboard/settings/violations")
 }
 
-export async function createViolationType(data: { name: string; severityLevel: string; categoryId: string }) {
+export async function createViolationType(data: { name: string; severity: string; categoryId: string }) {
   await requirePermission("settings.manage")
   const validated = typeSchema.parse(data)
   
@@ -74,7 +74,7 @@ export async function createViolationType(data: { name: string; severityLevel: s
     action: "CREATE",
     entity: "ViolationType",
     entityId: type.id,
-    details: { message: `Created violation type: ${type.name} (${type.severityLevel})` }
+    details: { message: `Created violation type: ${type.name} (${type.severity})` }
   })
   
   revalidatePath("/dashboard/settings/violations")
