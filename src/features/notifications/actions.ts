@@ -15,7 +15,7 @@ export async function getUserNotifications() {
       take: 20
     })
     return { data: notifications, error: null }
-  } catch (error) {
+  } catch (_error) {
     return { data: null, error: "Failed to fetch notifications" }
   }
 }
@@ -31,7 +31,7 @@ export async function markNotificationRead(id: string) {
     })
     revalidatePath("/dashboard")
     return { error: null }
-  } catch (error) {
+  } catch (_error) {
     return { error: "Failed to mark notification read" }
   }
 }
@@ -47,7 +47,7 @@ export async function markAllNotificationsRead() {
     })
     revalidatePath("/dashboard")
     return { error: null }
-  } catch (error) {
+  } catch (_error) {
     return { error: "Failed to mark notifications read" }
   }
 }
@@ -61,7 +61,7 @@ export async function createNotification(data: {
   try {
     await prisma.notification.create({ data })
     return { error: null }
-  } catch (error) {
+  } catch (_error) {
     return { error: "Failed to create notification" }
   }
 }

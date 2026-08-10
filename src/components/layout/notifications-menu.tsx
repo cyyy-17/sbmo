@@ -6,7 +6,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuGroup,
@@ -45,7 +44,7 @@ export function NotificationsMenu({ initialNotifications }: { initialNotificatio
       <DropdownMenuContent align="end" className="w-80 max-h-[420px] overflow-y-auto p-0">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <div className="flex items-center gap-2">
-            <DropdownMenuLabel className="p-0 text-sm font-semibold">Notifications</DropdownMenuLabel>
+            <h3 className="p-0 text-sm font-semibold">Notifications</h3>
             {unreadCount > 0 && (
               <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold px-1.5">
                 {unreadCount}
