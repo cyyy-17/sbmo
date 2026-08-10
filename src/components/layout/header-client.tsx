@@ -129,10 +129,8 @@ export function HeaderClient({ userImage, userName, userEmail, userRole, notific
       {/* Mobile Menu */}
       <div className="md:hidden flex items-center">
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild>
-            <button className="p-2 -ml-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none transition-colors">
-              <Menu className="h-5 w-5" />
-            </button>
+          <SheetTrigger className="p-2 -ml-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none transition-colors">
+            <Menu className="h-5 w-5" />
           </SheetTrigger>
           <SheetContent side="left" className="w-[280px] sm:w-[320px] p-0 flex flex-col glass border-r-white/10">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
