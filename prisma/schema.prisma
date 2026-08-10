@@ -1,0 +1,646 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// -----------------------------------------------------------------------------
+// IDENTITY & ACCESS MANAGEMENT (Auth.js Compatible)
+// -----------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  firstName     String?
+  lastName      String?
+  middleName    String?
+  suffix        String?
+  preferredName String?
+  dateOfBirth   DateTime?
+  gender        String?
+  address       String?
+  contactNumber String?
+  employmentStatus String @default("ACTIVE")
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String? // For email/password auth if needed
+
+  // Relations
+  accounts  Account[]
+  sessions  Session[]
+  auditLogs AuditLog[]
+
+  // RBAC
+  roleId String?
+  role   Role?   @relation(fields: [roleId], references: [id])
+
+  // Audit
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  isActive           Boolean             @default(true)
+  incidents          Incident[]
+  evidence           Evidence[]
+  cases              Case[]              @relation("CaseAssignee")
+  statements         Statement[]         @relation("StatementTaker")
+  investigationNotes InvestigationNote[] @relation("NoteAuthor")
+
+  communicationsMade    CommunicationLog[]   @relation("CommunicationInitiator")
+  conferencesOrganized  Conference[]         @relation("ConferenceOrganizer")
+  conferenceAttendances ConferenceAttendee[] @relation("ConferenceStaff")
+  notifications         Notification[]       @relation("UserNotifications")
+
+  assignedInterventions Intervention[]       @relation("InterventionStaff")
+  progressNotes         BehaviorProgress[]   @relation("ProgressAuthor")
+  documentsCreated      Document[]           @relation("DocumentCreator")
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// -----------------------------------------------------------------------------
+// ROLE-BASED ACCESS CONTROL (RBAC)
+// -----------------------------------------------------------------------------
+
+model Role {
+  id          String  @id @default(uuid())
+  name        String  @unique // e.g., SUPER_ADMIN, SBMO_ADMIN, TEACHER
+  description String?
+
+  users       User[]
+  permissions RolePermission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Permission {
+  id          String  @id @default(uuid())
+  name        String  @unique // e.g., students.view, cases.create
+  description String?
+
+  roles RolePermission[]
+
+  createdAt DateTime @default(now())
+}
+
+model RolePermission {
+  id           String @id @default(uuid())
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([roleId, permissionId])
+}
+
+// -----------------------------------------------------------------------------
+// AUDIT LOG
+// -----------------------------------------------------------------------------
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String // CREATE, UPDATE, DELETE, LOGIN, EXPORT
+  entity    String
+  entityId  String?
+  details   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// -----------------------------------------------------------------------------
+// ORGANIZATION & STRUCTURE
+// -----------------------------------------------------------------------------
+
+model School {
+  id        String  @id @default(uuid())
+  name      String  @unique
+  address   String?
+  phone     String?
+  principal String?
+
+  departments Department[]
+  students    Student[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Department {
+  id       String @id @default(uuid())
+  name     String
+  schoolId String
+
+  school School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  grades GradeLevel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, schoolId])
+}
+
+model GradeLevel {
+  id           String @id @default(uuid())
+  name         String // e.g. "Grade 7", "Year 1"
+  level        Int // numeric representation for sorting
+  departmentId String
+
+  department Department          @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  sections   Section[]
+  students   StudentEnrollment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, departmentId])
+}
+
+model Section {
+  id           String  @id @default(uuid())
+  name         String // e.g. "A", "Rizal", "Newton"
+  gradeLevelId String
+  adviserId    String? // Reference to a User (teacher) if needed
+
+  gradeLevel GradeLevel          @relation(fields: [gradeLevelId], references: [id], onDelete: Cascade)
+  students   StudentEnrollment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, gradeLevelId])
+}
+
+model SchoolYear {
+  id        String   @id @default(uuid())
+  name      String   @unique // e.g. "2023-2024"
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(false)
+
+  enrollments StudentEnrollment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// STUDENT & FAMILY
+// -----------------------------------------------------------------------------
+
+model Student {
+  id            String    @id @default(uuid())
+  studentId     String    @unique // School issued ID
+  firstName     String
+  lastName      String
+  middleName    String?
+  suffix        String?
+  preferredName String?
+  dateOfBirth   DateTime?
+  gender        String?
+  address       String?
+  contactNumber String?
+  email         String?
+  photo         String?
+  enrollmentStatus String @default("ACTIVE")
+
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id])
+
+  enrollments StudentEnrollment[]
+  guardians   StudentGuardian[]
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  isArchived       Boolean           @default(false)
+  incidentStudents IncidentStudent[]
+  statements       Statement[]
+
+  communications        CommunicationLog[]
+  conferences           Conference[]
+  conferenceAttendances ConferenceAttendee[]
+  interventions         Intervention[]
+  documents             Document[]
+}
+
+model StudentEnrollment {
+  id           String  @id @default(uuid())
+  studentId    String
+  schoolYearId String
+  gradeLevelId String
+  sectionId    String?
+
+  student    Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  schoolYear SchoolYear @relation(fields: [schoolYearId], references: [id])
+  gradeLevel GradeLevel @relation(fields: [gradeLevelId], references: [id])
+  section    Section?   @relation(fields: [sectionId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, schoolYearId])
+}
+
+model Guardian {
+  id            String  @id @default(uuid())
+  firstName     String
+  lastName      String
+  relationship  String // Father, Mother, Aunt, etc.
+  contactNumber String
+  email         String?
+  address       String?
+
+  students StudentGuardian[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  communications        CommunicationLog[]
+  conferenceAttendances ConferenceAttendee[]
+}
+
+model StudentGuardian {
+  id          String  @id @default(uuid())
+  studentId   String
+  guardianId  String
+  isPrimary   Boolean @default(false)
+  isEmergency Boolean @default(false)
+
+  student  Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardian Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, guardianId])
+}
+
+// -----------------------------------------------------------------------------
+// INCIDENTS & VIOLATIONS (Phase 3)
+// -----------------------------------------------------------------------------
+
+model Incident {
+  id              String   @id @default(uuid())
+  referenceNumber String   @unique // E.g., INC-2024-001
+  title           String
+  description     String   @db.Text
+  dateOfIncident  DateTime
+  location        String?
+  status          String   @default("DRAFT") // DRAFT, REPORTED, UNDER_INVESTIGATION, RESOLVED
+  severity        String   @default("MINOR") // MINOR, MAJOR, CRITICAL
+  confidentiality String   @default("STANDARD") // STANDARD, CONFIDENTIAL, HIGHLY_CONFIDENTIAL
+
+  caseId     String?
+  case       Case?   @relation(fields: [caseId], references: [id])
+  reporterId String
+  reporter   User    @relation(fields: [reporterId], references: [id])
+
+  students   IncidentStudent[]
+  evidence   Evidence[]
+  statements Statement[]
+  documents  Document[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model IncidentStudent {
+  id              String  @id @default(uuid())
+  incidentId      String
+  studentId       String
+  involvementType String // OFFENDER, VICTIM, WITNESS
+  statement       String? @db.Text
+
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  student  Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  violations IncidentViolation[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([incidentId, studentId, involvementType])
+}
+
+model ViolationCategory {
+  id          String  @id @default(uuid())
+  name        String  @unique // e.g. "Academic Dishonesty", "Bullying"
+  description String?
+
+  types ViolationType[]
+
+  createdAt DateTime @default(now())
+}
+
+model ViolationType {
+  id         String @id @default(uuid())
+  categoryId String
+  name       String // e.g. "Cheating on exam"
+  severity   String // MINOR, MAJOR, CRITICAL
+
+  category  ViolationCategory   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  incidents IncidentViolation[]
+
+  createdAt DateTime @default(now())
+}
+
+model IncidentViolation {
+  id                String @id @default(uuid())
+  incidentStudentId String
+  violationTypeId   String
+
+  incidentStudent IncidentStudent @relation(fields: [incidentStudentId], references: [id], onDelete: Cascade)
+  violationType   ViolationType   @relation(fields: [violationTypeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([incidentStudentId, violationTypeId])
+}
+
+model Evidence {
+  id           String  @id @default(uuid())
+  incidentId   String
+  name         String
+  description  String?
+  fileUrl      String
+  fileType     String // IMAGE, DOCUMENT, VIDEO
+  uploadedById String
+
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  uploadedBy User     @relation(fields: [uploadedById], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// CASE MANAGEMENT (Phase 4)
+// -----------------------------------------------------------------------------
+
+model Case {
+  id              String  @id @default(uuid())
+  referenceNumber String  @unique // E.g., CASE-2024-001
+  title           String
+  description     String? @db.Text
+  status          String  @default("OPEN") // OPEN, INVESTIGATING, RESOLVED, CLOSED
+  confidentiality String  @default("STANDARD") // STANDARD, CONFIDENTIAL, HIGHLY_CONFIDENTIAL
+  assignedToId    String?
+  assignedTo      User?   @relation(name: "CaseAssignee", fields: [assignedToId], references: [id])
+
+  incidents      Incident[]
+  statements     Statement[]
+  notes          InvestigationNote[]
+  communications CommunicationLog[]
+  conferences    Conference[]
+  interventions  Intervention[]
+  documents      Document[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Statement {
+  id         String    @id @default(uuid())
+  caseId     String?
+  case       Case?     @relation(fields: [caseId], references: [id])
+  incidentId String?
+  incident   Incident? @relation(fields: [incidentId], references: [id])
+
+  studentId String?
+  student   Student? @relation(fields: [studentId], references: [id])
+
+  witnessName   String?
+  statementType String // WRITTEN, VERBAL, THIRD_PARTY
+  content       String   @db.Text
+  dateTaken     DateTime @default(now())
+
+  takenById String
+  takenBy   User   @relation(name: "StatementTaker", fields: [takenById], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model InvestigationNote {
+  id     String @id @default(uuid())
+  caseId String
+  case   Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  content  String @db.Text
+  authorId String
+  author   User   @relation(name: "NoteAuthor", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// COMMUNICATION & NOTIFICATIONS (Phase 5)
+// -----------------------------------------------------------------------------
+
+model CommunicationLog {
+  id          String   @id @default(uuid())
+  type        String // CALL, EMAIL, LETTER, IN_PERSON
+  contactDate DateTime @default(now())
+  notes       String   @db.Text
+  status      String   @default("COMPLETED") // PENDING, COMPLETED, FAILED
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  caseId String?
+  case   Case?   @relation(fields: [caseId], references: [id])
+
+  guardianId String?
+  guardian   Guardian? @relation(fields: [guardianId], references: [id])
+
+  userId String
+  user   User   @relation(name: "CommunicationInitiator", fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Conference {
+  id              String   @id @default(uuid())
+  scheduledAt     DateTime
+  status          String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED, NO_SHOW
+  resolutionNotes String?  @db.Text
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  caseId String?
+  case   Case?   @relation(fields: [caseId], references: [id])
+
+  organizerId String
+  organizer   User   @relation(name: "ConferenceOrganizer", fields: [organizerId], references: [id])
+
+  attendees ConferenceAttendee[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ConferenceAttendee {
+  id           String     @id @default(uuid())
+  conferenceId String
+  conference   Conference @relation(fields: [conferenceId], references: [id], onDelete: Cascade)
+
+  attendeeType String // STUDENT, GUARDIAN, STAFF, EXTERNAL
+
+  studentId String?
+  student   Student? @relation(fields: [studentId], references: [id])
+
+  guardianId String?
+  guardian   Guardian? @relation(fields: [guardianId], references: [id])
+
+  userId String?
+  user   User?   @relation(name: "ConferenceStaff", fields: [userId], references: [id])
+
+  externalName String?
+
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id      String  @id @default(uuid())
+  title   String
+  message String  @db.Text
+  link    String?
+  isRead  Boolean @default(false)
+
+  userId String
+  user   User   @relation(name: "UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// INTERVENTION & BEHAVIOR PLANS (Phase 6)
+// -----------------------------------------------------------------------------
+
+model Intervention {
+  id              String   @id @default(uuid())
+  type            String   // DETENTION, SUSPENSION, COUNSELING, BEHAVIOR_PLAN, MEDIATION, WARNING
+  description     String   @db.Text
+  startDate       DateTime
+  endDate         DateTime?
+  status          String   @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  
+  studentId       String
+  student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  caseId          String?
+  case            Case?    @relation(fields: [caseId], references: [id])
+  
+  assignedToId    String?
+  assignedTo      User?    @relation(name: "InterventionStaff", fields: [assignedToId], references: [id])
+  
+  behaviorPlan    BehaviorPlan?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model BehaviorPlan {
+  id              String   @id @default(uuid())
+  interventionId  String   @unique
+  intervention    Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  
+  goals           String   @db.Text
+  strategies      String   @db.Text
+  reviewDate      DateTime?
+  
+  progressUpdates BehaviorProgress[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model BehaviorProgress {
+  id              String       @id @default(uuid())
+  behaviorPlanId  String
+  behaviorPlan    BehaviorPlan @relation(fields: [behaviorPlanId], references: [id], onDelete: Cascade)
+  
+  date            DateTime     @default(now())
+  notes           String       @db.Text
+  rating          Int?         // E.g., 1-5 scale of progress
+  
+  authorId        String
+  author          User         @relation(name: "ProgressAuthor", fields: [authorId], references: [id])
+  
+  createdAt       DateTime     @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// DOCUMENTS (Phase 7)
+// -----------------------------------------------------------------------------
+
+model DocumentTemplate {
+  id          String   @id @default(uuid())
+  name        String   // E.g., "Suspension Letter", "Incident Report"
+  type        String   // CASE, INCIDENT, STUDENT
+  content     String   @db.Text // HTML content with placeholders {{studentName}}
+  
+  documents   Document[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  title       String
+  content     String   @db.Text // The finalized document content
+  
+  templateId  String?
+  template    DocumentTemplate? @relation(fields: [templateId], references: [id])
+  
+  studentId   String?
+  student     Student?  @relation(fields: [studentId], references: [id])
+  
+  caseId      String?
+  case        Case?    @relation(fields: [caseId], references: [id])
+  
+  incidentId  String?
+  incident    Incident? @relation(fields: [incidentId], references: [id])
+
+  createdBy   String
+  user        User     @relation(name: "DocumentCreator", fields: [createdBy], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
