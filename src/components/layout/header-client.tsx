@@ -18,6 +18,7 @@ import { getEntityName } from "@/lib/breadcrumb-actions"
 import { useState, useEffect } from "react"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { getNavGroups } from "./sidebar"
+import { ThemeToggle } from "./theme-toggle"
 import { cn } from "@/lib/utils"
 
 // Map path segments to display labels
@@ -166,6 +167,11 @@ export function HeaderClient({ userImage, userName, userEmail, userRole, notific
                 ))}
               </div>
             </div>
+
+            {/* Mobile Sheet Footer Theme Toggle */}
+            <div className="border-t border-border/40 p-4 bg-muted/20">
+              <ThemeToggle variant="pill" />
+            </div>
           </SheetContent>
         </Sheet>
       </div>
@@ -187,6 +193,9 @@ export function HeaderClient({ userImage, userName, userEmail, userRole, notific
           Ctrl K
         </kbd>
       </div>
+
+      {/* Dark / Light Mode Toggle (Accessible in both Desktop and Mobile Top Bar) */}
+      <ThemeToggle />
 
       {/* Notifications */}
       <NotificationsMenu initialNotifications={notifications} />

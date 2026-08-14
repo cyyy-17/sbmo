@@ -22,8 +22,8 @@ import {
   Settings,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-
 import { LucideIcon } from "lucide-react"
+import { ThemeToggle } from "./theme-toggle"
 
 export type NavGroup = {
   label: string
@@ -67,64 +67,6 @@ export const getNavGroups = (userRole?: string): NavGroup[] => {
   ]
 
   return groups
-}
-
-function ThemeToggle({ collapsed }: { collapsed: boolean }) {
-  const [isDark, setIsDark] = useState(false)
-
-  useEffect(() => {
-    const saved = localStorage.getItem("theme")
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-    const dark = saved === "dark" || (!saved && prefersDark)
-    setIsDark(dark)
-    document.documentElement.classList.toggle("dark", dark)
-  }, [])
-
-  const toggle = () => {
-    const next = !isDark
-    setIsDark(next)
-    document.documentElement.classList.toggle("dark", next)
-    localStorage.setItem("theme", next ? "dark" : "light")
-  }
-
-  return (
-    <button
-      onClick={toggle}
-      className={cn(
-        "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium",
-        "text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200",
-        "active:scale-[0.95]",
-        collapsed && "justify-center px-2"
-      )}
-      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-    >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={isDark ? "moon" : "sun"}
-          initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
-          animate={{ opacity: 1, rotate: 0, scale: 1 }}
-          exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
-          transition={{ duration: 0.2 }}
-          className="flex-shrink-0"
-        >
-          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </motion.span>
-      </AnimatePresence>
-      <AnimatePresence>
-        {!collapsed && (
-          <motion.span
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: "auto" }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden whitespace-nowrap font-medium"
-          >
-            {isDark ? "Light Mode" : "Dark Mode"}
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </button>
-  )
 }
 
 export function Sidebar({ userRole }: { userRole?: string }) {
@@ -251,7 +193,7 @@ export function Sidebar({ userRole }: { userRole?: string }) {
 
       {/* Footer: Theme Toggle */}
       <div className="border-t border-white/10 p-3 flex-shrink-0 bg-background/20 backdrop-blur-md">
-        <ThemeToggle collapsed={collapsed} />
+        <ThemeToggle variant={collapsed ? "icon" : "pill"} />
       </div>
     </motion.aside>
   )
