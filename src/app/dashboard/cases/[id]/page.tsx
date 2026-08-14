@@ -26,10 +26,102 @@ export default async function CaseDetailsPage(props: { params: Promise<{ id: str
 
   // Aggregate events for the timeline
   const timelineEvents = [
-    ...caseData.notes.map(n => ({ id: n.id, type: 'NOTE' as const, title: 'Investigation Note', description: n.content, date: n.createdAt, author: n.author.name || "Unknown" })),
-    ...caseData.incidents.map(i => ({ id: i.id, type: 'INCIDENT' as const, title: `Incident Linked: ${i.title}`, description: i.description, date: i.dateOfIncident, author: i.reporter.name || "Unknown" })),
-    ...caseData.statements.map(s => ({ id: s.id, type: 'STATEMENT' as const, title: `Statement: ${s.statementType}`, description: s.content, date: s.dateTaken, author: s.takenBy.name || "Unknown" })),
-    ...caseData.communications.map(c => ({ id: c.id, type: 'COMMUNICATION' as const, title: `Communication: ${c.type}`, description: c.notes, date: c.contactDate, author: c.user.name || "Unknown" })),
+    ...caseData.notes.map((n) => ({
+      id: `note-${n.id}`,
+      type: "NOTE" as const,
+      title: "Investigation Note",
+      description: n.content,
+      date: n.createdAt,
+      author: n.author.name || "Staff Member",
+    })),
+    ...caseData.incidents.map((i) => ({
+      id: `incident-${i.id}`,
+      type: "INCIDENT" as const,
+      title: i.title,
+      subtitle: `Reference: ${i.referenceNumber}`,
+      description: i.description,
+      date: i.dateOfIncident,
+      author: i.reporter.name || "Incident Reporter",
+      badge: i.severity,
+      badgeVariant: (i.severity === "CRITICAL" ? "destructive" : "outline") as any,
+      meta: {
+        tags: i.students.map(
+          (s) => `${s.student.firstName} ${s.student.lastName} (${s.involvementType})`
+        ),
+      },
+    })),
+    ...caseData.statements.map((s) => ({
+      id: `statement-${s.id}`,
+      type: "STATEMENT" as const,
+      title: `Statement (${s.statementType})`,
+      subtitle: s.student
+        ? `Subject: ${s.student.firstName} ${s.student.lastName}`
+        : s.witnessName
+        ? `Witness: ${s.witnessName}`
+        : undefined,
+      description: s.content,
+      date: s.dateTaken,
+      author: s.takenBy.name || "Interviewer",
+      badge: s.statementType,
+    })),
+    ...caseData.communications.map((c) => ({
+      id: `comm-${c.id}`,
+      type: "COMMUNICATION" as const,
+      title: `Contact Log (${c.type})`,
+      subtitle: c.student
+        ? `With: ${c.student.firstName} ${c.student.lastName}${
+            c.guardian ? ` & ${c.guardian.firstName} ${c.guardian.lastName} (${c.guardian.relationship})` : ""
+          }`
+        : undefined,
+      description: c.notes,
+      date: c.contactDate,
+      author: c.user.name || "Staff",
+      badge: c.status,
+    })),
+    ...caseData.conferences.map((conf) => ({
+      id: `conf-${conf.id}`,
+      type: "CONFERENCE" as const,
+      title: "Case Conference",
+      subtitle: `Scheduled Meeting`,
+      description: conf.resolutionNotes || "Scheduled case conference meeting with involved parties.",
+      date: conf.scheduledAt,
+      author: conf.organizer.name || "Organizer",
+      badge: conf.status,
+      meta: {
+        tags: conf.attendees.map((a) =>
+          a.student
+            ? `${a.student.firstName} ${a.student.lastName} (Student)`
+            : a.guardian
+            ? `${a.guardian.firstName} ${a.guardian.lastName} (Guardian)`
+            : a.user
+            ? `${a.user.name} (Staff)`
+            : a.externalName || "Attendee"
+        ),
+      },
+    })),
+    ...caseData.interventions.map((int) => ({
+      id: `int-${int.id}`,
+      type: "INTERVENTION" as const,
+      title: `Intervention: ${int.type.replace("_", " ")}`,
+      subtitle: `Target: ${int.student.firstName} ${int.student.lastName}`,
+      description: int.description,
+      date: int.startDate,
+      author: int.assignedTo?.name || "Assigned Counselor",
+      badge: int.status,
+    })),
+    ...((caseData as any).documents || []).map((doc: any) => ({
+      id: `doc-${doc.id}`,
+      type: "DOCUMENT" as const,
+      title: doc.title,
+      subtitle: doc.template?.name ? `Template: ${doc.template.name}` : "Official Document",
+      description: "Official document generated and attached to this case record.",
+      date: doc.createdAt,
+      author: doc.user?.name || "Creator",
+      meta: {
+        label: "View & Print",
+        link: `/dashboard/documents/${doc.id}`,
+      },
+    })),
   ]
 
   return (
