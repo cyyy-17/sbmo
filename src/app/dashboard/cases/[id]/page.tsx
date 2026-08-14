@@ -8,6 +8,8 @@ import { AlertCircle, Clock, CheckCircle, FolderOpen, UserCircle, Calendar, File
 import Link from "next/link"
 import { CaseTimeline } from "@/components/cases/case-timeline"
 import { RecordStatementModal } from "@/components/cases/record-statement-modal"
+import { LogContactModal } from "@/components/cases/log-contact-modal"
+import { ScheduleConferenceModal } from "@/components/cases/schedule-conference-modal"
 
 export default async function CaseDetailsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params
@@ -323,14 +325,24 @@ export default async function CaseDetailsPage(props: { params: Promise<{ id: str
           )}
         </TabsContent>
         <TabsContent value="communications" className="space-y-4">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">Communication Logs</h3>
-            <Button size="sm">Log Contact</Button>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-1">
+            <div>
+              <h3 className="text-lg font-semibold">Communication Logs</h3>
+              <p className="text-xs text-muted-foreground">
+                Document all calls, emails, visits, and letters exchanged with students or guardians.
+              </p>
+            </div>
+            <LogContactModal caseId={caseData.id} involvedStudents={involvedStudents} />
           </div>
           {caseData.communications.length === 0 ? (
-            <div className="text-center p-8 border rounded-lg bg-muted/20">
-              <Phone className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No communications logged for this case.</p>
+            <div className="text-center p-12 text-muted-foreground border rounded-2xl border-dashed bg-muted/10 space-y-3">
+              <Phone className="w-8 h-8 text-muted-foreground mx-auto opacity-50" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">No communications logged for this case.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Use "Log Contact" above to record parent calls, letters, emails, or meetings.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -369,14 +381,24 @@ export default async function CaseDetailsPage(props: { params: Promise<{ id: str
         </TabsContent>
 
         <TabsContent value="conferences" className="space-y-4">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">Scheduled Conferences</h3>
-            <Button size="sm">Schedule Conference</Button>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-1">
+            <div>
+              <h3 className="text-lg font-semibold">Scheduled Conferences</h3>
+              <p className="text-xs text-muted-foreground">
+                Formal meetings between case officers, parents, students, and support staff.
+              </p>
+            </div>
+            <ScheduleConferenceModal caseId={caseData.id} involvedStudents={involvedStudents} />
           </div>
           {caseData.conferences.length === 0 ? (
-            <div className="text-center p-8 border rounded-lg bg-muted/20">
-              <Calendar className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No conferences scheduled for this case.</p>
+            <div className="text-center p-12 text-muted-foreground border rounded-2xl border-dashed bg-muted/10 space-y-3">
+              <Calendar className="w-8 h-8 text-muted-foreground mx-auto opacity-50" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">No conferences scheduled for this case.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Use "Schedule Conference" above to book formal hearings or parent consultations.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
