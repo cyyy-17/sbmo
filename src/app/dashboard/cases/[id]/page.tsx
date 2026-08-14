@@ -7,12 +7,21 @@ import { notFound } from "next/navigation"
 import { AlertCircle, Clock, CheckCircle, FolderOpen, UserCircle, Calendar, FileText, MessageSquare, Phone, Activity, FileSymlink, Printer, History } from "lucide-react"
 import Link from "next/link"
 import { CaseTimeline } from "@/components/cases/case-timeline"
+import { RecordStatementModal } from "@/components/cases/record-statement-modal"
 
 export default async function CaseDetailsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params
   const caseData = await getCaseDetails(params.id)
 
   if (!caseData) notFound()
+
+  const involvedStudents = Array.from(
+    new Map(
+      caseData.incidents
+        .flatMap((i) => i.students)
+        .map((s) => [s.student.id, { id: s.student.id, firstName: s.student.firstName, lastName: s.student.lastName }])
+    ).values()
+  )
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -238,37 +247,52 @@ export default async function CaseDetailsPage(props: { params: Promise<{ id: str
         </TabsContent>
 
         <TabsContent value="statements" className="space-y-4">
-          {/* We would typically have a button here to "Add Statement" */}
-          {caseData.statements.map(statement => (
-            <Card key={statement.id}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-1">
+            <div>
+              <h3 className="text-lg font-semibold">Recorded Statements & Testimonies</h3>
+              <p className="text-xs text-muted-foreground">
+                Formal written or oral statements taken from involved students and witnesses.
+              </p>
+            </div>
+            <RecordStatementModal caseId={caseData.id} involvedStudents={involvedStudents} />
+          </div>
+
+          {caseData.statements.map((statement) => (
+            <Card key={statement.id} className="shadow-xs">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <UserCircle className="w-5 h-5 text-muted-foreground" />
-                      {statement.student 
+                      <UserCircle className="w-5 h-5 text-primary" />
+                      {statement.student
                         ? `${statement.student.firstName} ${statement.student.lastName} (Student)`
                         : `${statement.witnessName} (Witness)`}
                     </CardTitle>
-                    <CardDescription className="flex items-center gap-2 mt-1">
-                      <Calendar className="w-3 h-3" /> {new Date(statement.dateTaken).toLocaleString()}
+                    <CardDescription className="flex items-center gap-2 mt-1 text-xs">
+                      <Calendar className="w-3.5 h-3.5" /> {new Date(statement.dateTaken).toLocaleString()}
                       <span className="mx-1">•</span>
-                      Type: {statement.statementType}
+                      Format: <strong className="text-foreground">{statement.statementType}</strong>
                     </CardDescription>
                   </div>
-                  <Badge variant="secondary">Taken by: {statement.takenBy.name}</Badge>
+                  <Badge variant="secondary" className="text-xs">Taken by: {statement.takenBy.name}</Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-muted/30 p-4 rounded-md border text-sm whitespace-pre-wrap font-serif">
+                <div className="bg-muted/40 p-4 rounded-xl border border-border/60 text-sm whitespace-pre-wrap font-serif italic leading-relaxed text-foreground">
                   "{statement.content}"
                 </div>
               </CardContent>
             </Card>
           ))}
           {caseData.statements.length === 0 && (
-            <div className="text-center p-8 text-muted-foreground border rounded-lg border-dashed">
-              No statements have been recorded yet.
+            <div className="text-center p-12 text-muted-foreground border rounded-2xl border-dashed bg-muted/10 space-y-3">
+              <MessageSquare className="w-8 h-8 mx-auto text-muted-foreground opacity-50" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">No statements recorded yet.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Use "Record Statement" above to capture written or verbal testimonies from students and witnesses.
+                </p>
+              </div>
             </div>
           )}
         </TabsContent>

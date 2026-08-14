@@ -104,7 +104,14 @@ export async function escalateIncidentToCase(incidentId: string) {
   await requirePermission("incidents.create")
   const session = await auth()
   
-  const incident = await prisma.incident.findUnique({ where: { id: incidentId } })
+  const incident = await prisma.incident.findUnique({
+    where: { id: incidentId },
+    include: {
+      students: {
+        include: { student: true }
+      }
+    }
+  })
   if (!incident) throw new Error("Incident not found")
   if (incident.caseId) throw new Error("Incident is already assigned to a case")
 
@@ -123,6 +130,28 @@ export async function escalateIncidentToCase(incidentId: string) {
       assignedToId: session?.user?.id, // Assign to the person escalating by default
     }
   })
+
+  // Automatically migrate any initial student statements from incident to official case statements
+  if (session?.user?.id && incident.students?.length > 0) {
+    for (const is of incident.students) {
+      if (is.statement && is.statement.trim()) {
+        try {
+          await prisma.statement.create({
+            data: {
+              caseId: newCase.id,
+              incidentId: incident.id,
+              studentId: is.studentId,
+              statementType: "WRITTEN",
+              content: is.statement.trim(),
+              takenById: session.user.id
+            }
+          })
+        } catch (e) {
+          console.warn("Could not copy initial student statement to case:", e)
+        }
+      }
+    }
+  }
   
   // Update incident status
   await prisma.incident.update({
