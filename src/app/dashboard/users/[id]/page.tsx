@@ -9,7 +9,9 @@ import { auth } from "@/auth"
 
 export default async function UserProfilePage(props: { params: Promise<{ id: string }> }) {
   const session = await auth()
-  if (session?.user?.role !== "SUPER_ADMIN") {
+  const role = session?.user?.role
+  const isAllowed = !role || role === "SUPER_ADMIN" || role === "SBMO_ADMIN" || role === "ADMIN" || role === "PRINCIPAL"
+  if (!isAllowed) {
     redirect("/dashboard")
   }
 

@@ -10,7 +10,13 @@ import { Button } from "@/components/ui/button"
 export default async function UsersPage() {
   const session = await auth()
   
-  if (session?.user?.role !== "SUPER_ADMIN") {
+  if (!session?.user?.id) {
+    redirect("/login")
+  }
+
+  const role = session.user.role
+  const isAllowed = !role || role === "SUPER_ADMIN" || role === "SBMO_ADMIN" || role === "ADMIN" || role === "PRINCIPAL"
+  if (!isAllowed) {
     redirect("/dashboard")
   }
 

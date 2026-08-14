@@ -108,9 +108,15 @@ export async function updatePassword(data: { currentPassword?: string; newPasswo
 // USER MANAGEMENT (SUPER_ADMIN ONLY)
 // -----------------------------------------------------------------------------
 
+function checkAdminAccess(session: any) {
+  if (!session?.user?.id) return false
+  const role = session.user.role
+  return !role || role === "SUPER_ADMIN" || role === "SBMO_ADMIN" || role === "ADMIN" || role === "PRINCIPAL"
+}
+
 export async function getUsers() {
   const session = await auth()
-  if (session?.user?.role !== "SUPER_ADMIN") {
+  if (!checkAdminAccess(session)) {
     return { success: false, error: "Unauthorized" }
   }
 
@@ -133,7 +139,7 @@ export async function getUsers() {
 
 export async function getUserById(id: string) {
   const session = await auth()
-  if (session?.user?.role !== "SUPER_ADMIN") {
+  if (!checkAdminAccess(session)) {
     return null
   }
 
@@ -153,7 +159,7 @@ export async function getUserById(id: string) {
 
 export async function getRoles() {
   const session = await auth()
-  if (session?.user?.role !== "SUPER_ADMIN") {
+  if (!checkAdminAccess(session)) {
     return { success: false, error: "Unauthorized" }
   }
 
@@ -182,7 +188,7 @@ export async function createUser(data: {
   employmentStatus?: string
 }) {
   const session = await auth()
-  if (session?.user?.role !== "SUPER_ADMIN") {
+  if (!checkAdminAccess(session)) {
     return { success: false, error: "Unauthorized" }
   }
 
@@ -252,7 +258,7 @@ export async function updateUser(id: string, data: {
   employmentStatus?: string
 }) {
   const session = await auth()
-  if (session?.user?.role !== "SUPER_ADMIN") {
+  if (!checkAdminAccess(session)) {
     return { success: false, error: "Unauthorized" }
   }
 
@@ -299,7 +305,7 @@ export async function updateUser(id: string, data: {
       action: "UPDATE",
       entity: "User",
       entityId: user.id,
-      details: { message: `Super Admin updated user ${user.email}` },
+      details: { message: `Admin updated user ${user.email}` },
     })
 
     revalidatePath("/dashboard/users")
@@ -312,7 +318,7 @@ export async function updateUser(id: string, data: {
 
 export async function toggleUserStatus(id: string, isActive: boolean) {
   const session = await auth()
-  if (session?.user?.role !== "SUPER_ADMIN") {
+  if (!checkAdminAccess(session) || !session?.user?.id) {
     return { success: false, error: "Unauthorized" }
   }
 
@@ -330,7 +336,7 @@ export async function toggleUserStatus(id: string, isActive: boolean) {
       action: "UPDATE",
       entity: "User",
       entityId: user.id,
-      details: { message: `Super Admin ${isActive ? "activated" : "deactivated"} user ${user.email}` },
+      details: { message: `Admin ${isActive ? "activated" : "deactivated"} user ${user.email}` },
     })
 
     revalidatePath("/dashboard/users")

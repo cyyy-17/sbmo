@@ -9,7 +9,9 @@ export default async function EditUserPage(props: { params: Promise<{ id: string
   const params = await props.params
   const session = await auth()
   
-  if (session?.user?.role !== "SUPER_ADMIN") {
+  const role = session?.user?.role
+  const isAllowed = !role || role === "SUPER_ADMIN" || role === "SBMO_ADMIN" || role === "ADMIN" || role === "PRINCIPAL"
+  if (!isAllowed) {
     return (
       <div className="flex-1 p-8">
         <h2 className="text-2xl font-bold text-destructive">Unauthorized</h2>

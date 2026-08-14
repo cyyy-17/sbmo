@@ -54,29 +54,17 @@ export const getNavGroups = (userRole?: string): NavGroup[] => {
         { href: "/dashboard/calendar", icon: Calendar, label: "Calendar" },
       ],
     },
-  ]
-
-  if (userRole === "ADMIN" || userRole === "SUPER_ADMIN") {
-    const adminGroup: NavGroup = {
+    {
       label: "Admin",
       items: [
+        { href: "/dashboard/users", icon: Users, label: "Users & Staff" },
         { href: "/dashboard/documents", icon: FileText, label: "Documents" },
         { href: "/dashboard/reports", icon: BarChart3, label: "Reports" },
         { href: "/dashboard/activity", icon: ClipboardList, label: "Activity Logs" },
         { href: "/dashboard/settings", icon: Settings, label: "Settings" },
       ],
-    }
-
-    if (userRole === "SUPER_ADMIN") {
-      adminGroup.items.unshift({
-        href: "/dashboard/users",
-        icon: Users,
-        label: "Users",
-      })
-    }
-    
-    groups.push(adminGroup)
-  }
+    },
+  ]
 
   return groups
 }

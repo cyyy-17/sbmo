@@ -6,7 +6,9 @@ import { AddUserForm } from "./form"
 export default async function AddUserPage() {
   const session = await auth()
   
-  if (session?.user?.role !== "SUPER_ADMIN") {
+  const role = session?.user?.role
+  const isAllowed = !role || role === "SUPER_ADMIN" || role === "SBMO_ADMIN" || role === "ADMIN" || role === "PRINCIPAL"
+  if (!isAllowed) {
     redirect("/dashboard")
   }
 
