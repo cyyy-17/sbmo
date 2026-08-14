@@ -20,6 +20,8 @@ import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 
+import { EmptyIncidentsIllustration } from "@/components/ui/illustrations"
+
 export const dtFeatures = tableFeatures({
   rowSelectionFeature,
   columnFilteringFeature,
@@ -84,10 +86,8 @@ export function DataTable<TData extends object>({
   } as any)
 
   // Row selection count via state (v9 doesn't have getFilteredSelectedRowModel)
-  console.log("DATA TABLE ROWS:", (table as any).getRowModel?.()?.rows);
   const selectedCount = Object.keys((table as any).state.rowSelection || {}).length
   const hasSelection = selectedCount > 0
-
 
   const allRows = (table as any).getRowModel?.()?.rows || []
   const isPaginated = allRows.length <= pagination.pageSize && allRows.length < data.length
@@ -104,18 +104,18 @@ export function DataTable<TData extends object>({
             value={globalFilter}
             onChange={e => setGlobalFilter(e.target.value)}
             placeholder={searchPlaceholder}
-            className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
+            className="h-9 w-full rounded-xl border border-border bg-card/60 px-3.5 text-xs placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring focus:bg-background transition-all duration-200 shadow-2xs"
           />
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span aria-live="polite" className="sr-only">
             {(table as any).getFilteredRowModel?.().rows.length ?? 0} results found
           </span>
-          <span aria-hidden="true">{(table as any).getFilteredRowModel?.().rows.length ?? 0} rows</span>
+          <span aria-hidden="true" className="font-medium">{(table as any).getFilteredRowModel?.().rows.length ?? 0} rows</span>
           <select
             value={pagination.pageSize}
             onChange={e => handlePageSizeChange(Number(e.target.value))}
-            className="h-9 rounded-lg border border-border bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-9 rounded-xl border border-border bg-card/60 px-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring font-medium"
           >
             {[10, 20, 50, 100].map(size => (
               <option key={size} value={size}>{size} / page</option>
@@ -132,13 +132,13 @@ export function DataTable<TData extends object>({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 16, opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-4 py-2.5"
+            className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 backdrop-blur-md"
           >
-            <span className="text-sm font-medium text-primary">
+            <span className="text-xs font-semibold text-primary">
               {selectedCount} row{selectedCount > 1 ? "s" : ""} selected
             </span>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => (table as any).resetRowSelection?.()}>
+              <Button variant="ghost" size="sm" onClick={() => (table as any).resetRowSelection?.()} className="h-7 text-xs">
                 Deselect all
               </Button>
             </div>
@@ -147,26 +147,25 @@ export function DataTable<TData extends object>({
       </AnimatePresence>
 
       {/* Table */}
-      <div className="rounded-xl border border-border overflow-hidden">
+      <div className="rounded-2xl border border-border/80 overflow-hidden glass-card">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/30 border-b border-border">
+          <table className="w-full text-xs">
+            <thead className="bg-muted/40 border-b border-border">
               {(table as any).getHeaderGroups?.()?.map((headerGroup: any) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header: any) => {
-                    // Safe access to sorting methods with optional chaining
                     const canSort = header.column.getCanSort?.() ?? false
                     const isSorted = header.column.getIsSorted?.() ?? false
 
                     return (
                       <th
                         key={header.id}
-                        className="h-11 px-4 text-left align-middle font-semibold text-muted-foreground whitespace-nowrap"
+                        className="h-10 px-4 text-left align-middle font-bold text-muted-foreground whitespace-nowrap uppercase tracking-wider text-[11px]"
                       >
                         {header.isPlaceholder ? null : canSort ? (
                           <button
                             onClick={header.column.getToggleSortingHandler?.()}
-                            className="flex items-center gap-1.5 hover:text-foreground transition-colors group"
+                            className="flex items-center gap-1.5 hover:text-foreground transition-colors group cursor-pointer"
                           >
                             {flexRender(header.column.columnDef.header, header.getContext())}
                             <span className="text-muted-foreground/40 group-hover:text-muted-foreground transition-colors">
@@ -188,11 +187,13 @@ export function DataTable<TData extends object>({
                 </tr>
               ))}
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-border/40">
               {displayRows.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="h-32 text-center text-muted-foreground text-sm">
-                    No results found.
+                  <td colSpan={columns.length} className="py-12 text-center">
+                    <EmptyIncidentsIllustration width={130} height={90} className="mb-2 opacity-80" />
+                    <p className="text-xs font-semibold text-foreground">No records match criteria.</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Try clearing filters or search query.</p>
                   </td>
                 </tr>
               ) : (
@@ -203,8 +204,8 @@ export function DataTable<TData extends object>({
                     <tr
                       key={row.id}
                       className={cn(
-                        "border-b border-border transition-colors duration-100 group",
-                        "hover:bg-muted/40",
+                        "transition-colors duration-150 group",
+                        "hover:bg-muted/50",
                         row.getIsSelected?.() && "bg-primary/5"
                       )}
                     >

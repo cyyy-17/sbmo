@@ -137,6 +137,8 @@ const EVENT_CONFIG: Record<
   },
 }
 
+import { EmptyCasesIllustration } from "@/components/ui/illustrations"
+
 export function CaseTimeline({ events }: { events: TimelineEvent[] }) {
   const [selectedType, setSelectedType] = useState<TimelineEventType | "ALL">("ALL")
   const [searchQuery, setSearchQuery] = useState("")
@@ -178,12 +180,14 @@ export function CaseTimeline({ events }: { events: TimelineEvent[] }) {
 
   if (events.length === 0) {
     return (
-      <div className="text-center p-12 border rounded-2xl border-dashed bg-muted/20 space-y-3">
-        <Clock className="w-10 h-10 text-muted-foreground mx-auto opacity-50" />
-        <h3 className="text-base font-semibold">No Timeline Events Yet</h3>
-        <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-          As linked incidents, statements, communications, notes, and interventions are recorded, they will appear here chronologically.
-        </p>
+      <div className="text-center p-12 border rounded-3xl border-dashed bg-card/40 backdrop-blur-md space-y-4 shadow-xs">
+        <EmptyCasesIllustration width={150} height={110} />
+        <div>
+          <h3 className="text-base font-bold text-foreground">No Timeline Events Recorded</h3>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
+            As linked incidents, testimonies, communications, notes, and interventions are created, they will stream here chronologically.
+          </p>
+        </div>
       </div>
     )
   }

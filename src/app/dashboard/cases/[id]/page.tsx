@@ -10,6 +10,12 @@ import { CaseTimeline } from "@/components/cases/case-timeline"
 import { RecordStatementModal } from "@/components/cases/record-statement-modal"
 import { LogContactModal } from "@/components/cases/log-contact-modal"
 import { ScheduleConferenceModal } from "@/components/cases/schedule-conference-modal"
+import {
+  EmptyIncidentsIllustration,
+  EmptyStatementsIllustration,
+  EmptyCommunicationsIllustration,
+  EmptyConferencesIllustration,
+} from "@/components/ui/illustrations"
 
 export default async function CaseDetailsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params
@@ -242,8 +248,14 @@ export default async function CaseDetailsPage(props: { params: Promise<{ id: str
             </Card>
           ))}
           {caseData.incidents.length === 0 && (
-            <div className="text-center p-8 text-muted-foreground border rounded-lg border-dashed">
-              No incidents linked to this case.
+            <div className="text-center p-12 text-muted-foreground border rounded-3xl border-dashed bg-card/40 backdrop-blur-md space-y-3">
+              <EmptyIncidentsIllustration width={140} height={100} />
+              <div>
+                <p className="text-sm font-semibold text-foreground">No incidents linked to this case.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Incidents connected to this case investigation will appear here.
+                </p>
+              </div>
             </div>
           )}
         </TabsContent>
@@ -287,8 +299,8 @@ export default async function CaseDetailsPage(props: { params: Promise<{ id: str
             </Card>
           ))}
           {caseData.statements.length === 0 && (
-            <div className="text-center p-12 text-muted-foreground border rounded-2xl border-dashed bg-muted/10 space-y-3">
-              <MessageSquare className="w-8 h-8 mx-auto text-muted-foreground opacity-50" />
+            <div className="text-center p-12 text-muted-foreground border rounded-3xl border-dashed bg-card/40 backdrop-blur-md space-y-3">
+              <EmptyStatementsIllustration width={140} height={100} />
               <div>
                 <p className="text-sm font-semibold text-foreground">No statements recorded yet.</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
@@ -335,8 +347,8 @@ export default async function CaseDetailsPage(props: { params: Promise<{ id: str
             <LogContactModal caseId={caseData.id} involvedStudents={involvedStudents} />
           </div>
           {caseData.communications.length === 0 ? (
-            <div className="text-center p-12 text-muted-foreground border rounded-2xl border-dashed bg-muted/10 space-y-3">
-              <Phone className="w-8 h-8 text-muted-foreground mx-auto opacity-50" />
+            <div className="text-center p-12 text-muted-foreground border rounded-3xl border-dashed bg-card/40 backdrop-blur-md space-y-3">
+              <EmptyCommunicationsIllustration width={140} height={100} />
               <div>
                 <p className="text-sm font-semibold text-foreground">No communications logged for this case.</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
@@ -391,8 +403,8 @@ export default async function CaseDetailsPage(props: { params: Promise<{ id: str
             <ScheduleConferenceModal caseId={caseData.id} involvedStudents={involvedStudents} />
           </div>
           {caseData.conferences.length === 0 ? (
-            <div className="text-center p-12 text-muted-foreground border rounded-2xl border-dashed bg-muted/10 space-y-3">
-              <Calendar className="w-8 h-8 text-muted-foreground mx-auto opacity-50" />
+            <div className="text-center p-12 text-muted-foreground border rounded-3xl border-dashed bg-card/40 backdrop-blur-md space-y-3">
+              <EmptyConferencesIllustration width={140} height={100} />
               <div>
                 <p className="text-sm font-semibold text-foreground">No conferences scheduled for this case.</p>
                 <p className="text-xs text-muted-foreground mt-0.5">

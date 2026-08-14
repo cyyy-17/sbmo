@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { FolderOpen, AlertCircle, CheckCircle, Clock, Briefcase } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+import { EmptyCasesIllustration } from "@/components/ui/illustrations"
+
 const statusConfig: Record<string, { label: string; icon: any; badgeClass: string; borderClass: string }> = {
   OPEN: {
     label: "Open",
@@ -67,24 +69,24 @@ export default async function CasesPage(props: { searchParams: Promise<{ status?
       </div>
 
       {/* Status Filter Tabs */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-1">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
         {tabs.map(tab => (
           <Link
             key={tab.key}
             href={tab.key === "ALL" ? "/dashboard/cases" : `/dashboard/cases?status=${tab.key}`}
             className={cn(
-              "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-all duration-150 border",
+              "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium whitespace-nowrap transition-all duration-150 border",
               activeFilter === tab.key
-                ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                : "bg-transparent text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                ? "bg-primary text-primary-foreground border-primary shadow-xs font-semibold"
+                : "bg-card/60 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
             )}
           >
             {tab.label}
             <span className={cn(
-              "text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center font-semibold",
+              "text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center font-semibold",
               activeFilter === tab.key
                 ? "bg-primary-foreground/20 text-primary-foreground"
-                : "bg-muted text-muted-foreground"
+                : "bg-background text-muted-foreground"
             )}>
               {tab.count}
             </span>
@@ -94,12 +96,14 @@ export default async function CasesPage(props: { searchParams: Promise<{ status?
 
       {/* Cases Grid */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-64 border border-dashed border-border rounded-xl">
-          <Briefcase className="w-10 h-10 text-muted-foreground/40 mb-3" />
-          <h3 className="text-base font-semibold text-muted-foreground">No cases found</h3>
-          <p className="text-sm text-muted-foreground/60 mt-1">
-            {activeFilter === "ALL" ? "Escalate an incident to create a case." : `No ${activeFilter.toLowerCase()} cases.`}
-          </p>
+        <div className="flex flex-col items-center justify-center p-16 border border-dashed border-border rounded-3xl bg-card/30 backdrop-blur-md text-center space-y-3">
+          <EmptyCasesIllustration width={160} height={120} />
+          <div>
+            <h3 className="text-base font-bold text-foreground">No cases found</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+              {activeFilter === "ALL" ? "Escalate an incident to create a new case investigation." : `No ${activeFilter.toLowerCase()} cases match this filter.`}
+            </p>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -109,8 +113,8 @@ export default async function CasesPage(props: { searchParams: Promise<{ status?
             return (
               <Link href={`/dashboard/cases/${c.id}`} key={c.id} className="group">
                 <div className={cn(
-                  "h-full flex flex-col rounded-xl border border-border border-l-4 bg-card p-5",
-                  "hover:shadow-md hover:border-border/70 hover:-translate-y-0.5",
+                  "h-full flex flex-col rounded-2xl border border-border border-l-4 glass-card p-5",
+                  "hover:shadow-lg hover:border-primary/40 hover:-translate-y-1",
                   "transition-all duration-200 cursor-pointer",
                   config.borderClass,
                 )}>
