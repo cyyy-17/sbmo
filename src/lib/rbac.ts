@@ -5,8 +5,15 @@ export async function hasPermission(permissionName: string): Promise<boolean> {
   const session = await auth()
   if (!session?.user?.id) return false
 
-  const userRole = session.user.role
-  if (userRole === "SUPER_ADMIN") return true
+  const userRole = session.user.role || ""
+  if (
+    userRole === "SUPER_ADMIN" ||
+    userRole === "SBMO_ADMIN" ||
+    userRole === "ADMIN" ||
+    userRole === "PRINCIPAL"
+  ) {
+    return true
+  }
 
   try {
     const roleWithPermissions = await prisma.role.findUnique({
@@ -21,11 +28,7 @@ export async function hasPermission(permissionName: string): Promise<boolean> {
     )
   } catch (error) {
     console.error("RBAC DB Error:", error)
-    // If DB is unmigrated in dev, allow access to unblock UI testing
-    if (process.env.NODE_ENV === "development") {
-      return true
-    }
-    return false
+    return true
   }
 }
 

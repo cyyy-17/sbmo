@@ -41,9 +41,14 @@ export function TypeModal({ categoryId }: { categoryId: string }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" size="sm" className="h-7 text-xs" />}>
-        <Plus className="mr-1 h-3 w-3" /> Add Type
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button variant="outline" size="sm" className="h-7 text-xs gap-1 cursor-pointer">
+            <Plus className="h-3 w-3" />
+            Add Type
+          </Button>
+        }
+      />
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add Violation Type</DialogTitle>

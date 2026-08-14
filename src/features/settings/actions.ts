@@ -1,7 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { requirePermission } from "@/lib/rbac"
+import { requirePermission, hasPermission } from "@/lib/rbac"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { logAudit } from "@/lib/audit"
@@ -18,12 +18,19 @@ const typeSchema = z.object({
 })
 
 export async function getViolationCategories() {
-  await requirePermission("settings.view")
-  return prisma.violationCategory.findMany({
-    take: 200,
-    include: { types: true },
-    orderBy: { name: 'asc' }
-  })
+  try {
+    const hasPerm = await hasPermission("settings.view")
+    if (!hasPerm) return []
+
+    return await prisma.violationCategory.findMany({
+      take: 200,
+      include: { types: true },
+      orderBy: { name: 'asc' }
+    })
+  } catch (error) {
+    console.error("Failed to fetch violation categories:", error)
+    return []
+  }
 }
 
 export async function createViolationCategory(data: { name: string; description?: string }) {

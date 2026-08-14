@@ -40,9 +40,14 @@ export function CategoryModal() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>
-        <Plus className="mr-2 h-4 w-4" /> Add Category
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button size="sm" className="gap-2 shadow-xs cursor-pointer">
+            <Plus className="h-4 w-4" />
+            Add Category
+          </Button>
+        }
+      />
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add Violation Category</DialogTitle>

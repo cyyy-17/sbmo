@@ -4,6 +4,8 @@ import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Shield, Check, Lock } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 export default async function RolesPermissionsPage() {
   const session = await auth()
   
