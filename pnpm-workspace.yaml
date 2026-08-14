@@ -1,0 +1,11 @@
+allowBuilds:
+  '@prisma/engines': true
+  core-js: true
+  prisma: true
+  unrs-resolver: true
+onlyBuiltDependencies:
+  - '@prisma/engines'
+  - '@prisma/client'
+  - core-js
+  - prisma
+  - unrs-resolver
