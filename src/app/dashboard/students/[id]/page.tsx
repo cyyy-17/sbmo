@@ -2,7 +2,7 @@ import { getStudentById } from "@/features/students/actions"
 import { notFound } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Edit, AlertCircle, ShieldAlert, Activity } from "lucide-react"
+import { ArrowLeft, AlertCircle, ShieldAlert, Activity } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -44,14 +44,9 @@ export default async function StudentProfilePage(props: { params: Promise<{ id: 
         </div>
           <div className="flex flex-col items-end gap-3">
           <div className="flex items-center space-x-2">
-            <Link href={`/dashboard/students/${student.id}/edit`}>
-              <Button variant="outline">
-                <Edit className="mr-2 h-4 w-4" /> Edit Profile
-              </Button>
-            </Link>
             <Link href={`/dashboard/incidents/report?studentId=${student.studentId}`}>
-              <Button variant="destructive">
-                <AlertCircle className="mr-2 h-4 w-4" /> Report Incident
+              <Button variant="destructive" className="gap-2 shadow-xs">
+                <AlertCircle className="h-4 w-4" /> Report Incident
               </Button>
             </Link>
           </div>

@@ -9,6 +9,17 @@ export const incidentSchema = z.object({
   confidentiality: z.enum(["STANDARD", "CONFIDENTIAL", "HIGHLY_CONFIDENTIAL"]).optional(),
   involvedStudents: z.array(z.object({
     studentId: z.string().min(1, "Student ID is required"),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    middleName: z.string().optional(),
+    suffix: z.string().optional(),
+    gender: z.string().optional(),
+    dateOfBirth: z.date().or(z.string().transform((str) => str ? new Date(str) : undefined)).optional(),
+    contactNumber: z.string().optional(),
+    email: z.string().optional(),
+    address: z.string().optional(),
+    gradeLevel: z.string().optional(),
+    section: z.string().optional(),
     involvementType: z.enum(["OFFENDER", "VICTIM", "WITNESS"]),
     statement: z.string().optional()
   })).min(1, "At least one student must be involved")

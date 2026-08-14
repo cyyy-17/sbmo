@@ -57,11 +57,18 @@ export function CommandPalette() {
                 <span>Dashboard</span>
               </Command.Item>
               <Command.Item 
-                onSelect={() => runCommand(() => router.push("/dashboard/incidents/add"))}
+                onSelect={() => runCommand(() => router.push("/dashboard/incidents/report"))}
                 className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground mt-1"
               >
                 <AlertCircle className="mr-2 h-4 w-4" />
                 <span>Report Incident</span>
+              </Command.Item>
+              <Command.Item 
+                onSelect={() => runCommand(() => router.push("/dashboard/students"))}
+                className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground mt-1"
+              >
+                <Users className="mr-2 h-4 w-4" />
+                <span>Student Directory</span>
               </Command.Item>
               <Command.Item 
                 onSelect={() => runCommand(() => router.push("/dashboard/cases"))}

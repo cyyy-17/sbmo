@@ -3,8 +3,7 @@
 import { DataTable } from "@/components/ui/data-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Eye, AlertCircle, MoreHorizontal, Trash2 } from "lucide-react"
-import { deleteStudent } from "@/features/students/actions"
+import { Eye, AlertCircle, MoreHorizontal } from "lucide-react"
 import Link from "next/link"
 import {
   DropdownMenu,
@@ -125,25 +124,9 @@ export const studentColumns: any[] = [
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Link href={`/dashboard/incidents/report?studentId=${row.original.studentId}`} className="flex items-center gap-2 w-full text-destructive">
+            <Link href={`/dashboard/incidents/report?studentId=${row.original.studentId}`} className="flex items-center gap-2 w-full text-amber-600 dark:text-amber-400">
               <AlertCircle className="h-3.5 w-3.5" /> Report Incident
             </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            className="flex items-center gap-2 w-full text-destructive cursor-pointer"
-            onClick={async (e) => {
-              e.preventDefault()
-              if (window.confirm(`Are you sure you want to completely remove ${row.original.firstName} ${row.original.lastName} and all their associated records? This action cannot be undone.`)) {
-                try {
-                  await deleteStudent(row.original.id)
-                  toast.success("Student deleted successfully")
-                } catch (error: any) {
-                  toast.error(error.message || "Failed to delete student. They may have dependent records that prevent deletion.")
-                }
-              }
-            }}
-          >
-            <Trash2 className="h-3.5 w-3.5" /> Delete Student
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
