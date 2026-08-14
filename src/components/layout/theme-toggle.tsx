@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Moon, Sun, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { triggerGlobalThemeWave } from "./theme-transition"
 
 interface ThemeToggleProps {
   variant?: "icon" | "pill" | "menu-item"
@@ -31,58 +32,27 @@ export function ThemeToggle({ variant = "icon", className }: ThemeToggleProps) {
     setIsAnimating(true)
     setTimeout(() => setIsAnimating(false), 700)
 
-    // Enable smooth transitioning class
+    // Calculate click coordinates for the full-screen wave origin
+    const rect = (e?.currentTarget as HTMLElement)?.getBoundingClientRect?.()
+    const x = rect ? rect.left + rect.width / 2 : (e?.clientX ?? window.innerWidth / 2)
+    const y = rect ? rect.top + rect.height / 2 : (e?.clientY ?? window.innerHeight / 2)
+
+    // Trigger full-screen expanding wave
+    triggerGlobalThemeWave(x, y, next ? "dark" : "light")
+
+    // Smooth document transition
     document.documentElement.classList.add("theme-transitioning")
+    
+    // Switch theme under the expanding wave mask
     setTimeout(() => {
-      document.documentElement.classList.remove("theme-transitioning")
-    }, 500)
-
-    // Modern Circular View Transition (Chrome, Edge, Safari 18+)
-    if (
-      typeof document !== "undefined" &&
-      "startViewTransition" in document &&
-      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      const rect = (e?.currentTarget as HTMLElement)?.getBoundingClientRect?.()
-      const x = rect ? rect.left + rect.width / 2 : (e?.clientX ?? window.innerWidth / 2)
-      const y = rect ? rect.top + rect.height / 2 : (e?.clientY ?? window.innerHeight / 2)
-
-      const endRadius = Math.hypot(
-        Math.max(x, window.innerWidth - x),
-        Math.max(y, window.innerHeight - y)
-      )
-
-      const transition = (document as any).startViewTransition(() => {
-        setIsDark(next)
-        document.documentElement.classList.toggle("dark", next)
-        localStorage.setItem("theme", next ? "dark" : "light")
-      })
-
-      transition.ready?.then(() => {
-        const clipPath = [
-          `circle(0px at ${x}px ${y}px)`,
-          `circle(${endRadius}px at ${x}px ${y}px)`,
-        ]
-
-        document.documentElement.animate(
-          {
-            clipPath: next ? clipPath : [...clipPath].reverse(),
-          },
-          {
-            duration: 450,
-            easing: "cubic-bezier(0.87, 0, 0.13, 1)",
-            pseudoElement: next
-              ? "::view-transition-new(root)"
-              : "::view-transition-old(root)",
-          }
-        )
-      })
-    } else {
-      // Fallback
       setIsDark(next)
       document.documentElement.classList.toggle("dark", next)
       localStorage.setItem("theme", next ? "dark" : "light")
-    }
+    }, 120)
+
+    setTimeout(() => {
+      document.documentElement.classList.remove("theme-transitioning")
+    }, 600)
   }
 
   if (!mounted) {
